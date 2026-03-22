@@ -47,7 +47,6 @@ export async function getAllProperties(req: Request, res: Response): Promise<voi
     };
 
     // Delegamos al repositorio
-    const properties = await propertyRepository.findAll(filters);
     let page = Number(req.query.page);
     let limit = Number(req.query.limit);
 
@@ -59,19 +58,16 @@ export async function getAllProperties(req: Request, res: Response): Promise<voi
         limit = 10;
     }
     const skip = (page - 1) * limit;
-    const paginatedProperties = properties.slice(skip, skip + limit);
-    const total = properties.length;
-    const pages = Math.ceil(total / limit);
+    const [properties, total] = await Promise.all([
+      propertyRepository.findAll(filters, { skip, take: limit }),
+      propertyRepository.count(filters),
+    ]);
 
-    res.json({
+    const pages = Math.ceil(total / limit);
+     res.json({
       success: true,
-      data: paginatedProperties,
-       meta: {
-    total,
-    page,
-    limit,
-    pages
-  }
+      data: properties,
+      meta: { total, page, limit, pages },
     });
   } catch (error) {
     console.error('Error al obtener propiedades:', error);
