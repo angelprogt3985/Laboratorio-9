@@ -202,8 +202,42 @@ export const propertyRepository = {
     });
     return property !== null;
   },
+
+  async getStats() {
+    const [total, groupedByType, priceRange] = await Promise.all([
+      prisma.property.count(),
+      prisma.property.groupBy({
+        by: ['propertyType'],
+        _count: { id: true },
+        _avg: { price: true },
+      }),
+      prisma.property.aggregate({
+        _min: { price: true },
+        _max: { price: true },
+      }),
+    ]);
+
+    const countByType: Record<string, number> = {};
+    const avgPriceByType: Record<string, number> = {};
+
+    for (const group of groupedByType) {
+      countByType[group.propertyType] = group._count.id;
+      avgPriceByType[group.propertyType] = Math.round(group._avg.price ?? 0);
+    }
+
+    return {
+      total,
+      countByType,
+      avgPriceByType,
+      priceRange: {
+        min: priceRange._min.price ?? 0,
+        max: priceRange._max.price ?? 0,
+      },
+    };
+  },
 };
 
+  
 // =============================================================================
 // HELPERS
 // =============================================================================
@@ -257,3 +291,4 @@ function buildWhereClause(filters?: PropertyFilters): Record<string, unknown> {
 
 // Export por defecto para compatibilidad
 export default propertyRepository;
+

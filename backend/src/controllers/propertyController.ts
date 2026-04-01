@@ -249,4 +249,9 @@ export async function deleteProperty(req: Request, res: Response): Promise<void>
       },
     });
   }
+
+  
 }
+
+
+
