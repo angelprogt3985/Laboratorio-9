@@ -22,6 +22,7 @@ import {
   getPropertyById,
   createProperty,
   updateProperty,
+  getPropertyStats,
   deleteProperty,
 } from '../controllers/propertyController.js';
 
@@ -51,6 +52,11 @@ router.get('/', (req, res) => {
  * GET /api/properties/:id
  * Obtiene una propiedad específica por su ID.
  */
+
+router.get('/stats', (req, res) => {
+  void getPropertyStats(req, res);
+});
+
 router.get('/:id', (req, res) => {
   void getPropertyById(req, res);
 });
